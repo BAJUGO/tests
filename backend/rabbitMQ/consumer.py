@@ -19,10 +19,9 @@ def callback(ch, method, properties, body):
 def main():
     with pika.BlockingConnection(connection_params) as conn:
         with conn.channel() as ch:
-            ch.queue_declare(queue="messages")
 
             ch.basic_consume(
-                queue="messages",
+                queue="hello", # из какой очереди взять (объявлять в консьюмере очередь ненужно)
                 on_message_callback=callback,
             )
             print("Жду сообщение")
