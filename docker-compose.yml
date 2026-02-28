@@ -12,6 +12,34 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+
+  mongo:
+    image: mongo:8.2-rc
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - db:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://user:password@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+
+
+
+
+
 volumes:
   rabbitmq-data:
     driver: local
+  db:
