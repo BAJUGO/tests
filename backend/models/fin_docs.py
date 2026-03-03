@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, DateTime
 from datetime import datetime
-from ..core.base_class import BaseClass
+from ..postgres_db.base_class import BaseClass
 
 class FinDocs(BaseClass):
     __tablename__ = "fin_docs"

@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 
 #! Importing all the models!
 import backend.models
-from backend.core.base_class import BaseClass
+from backend.postgres_db.base_class import BaseClass
 
 target_metadata = BaseClass.metadata
 
