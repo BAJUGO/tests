@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-class DbHelper:
+class PostgresHelper:
     def __init__(self, url: str, echo: bool):
         self.engine = create_async_engine(url=url, echo=echo)
 
@@ -32,7 +32,7 @@ class DbHelper:
             yield sess
 
 
-db_helper = DbHelper(url="postgresql+asyncpg://postgres:1234@localhost:5432/test_db", echo=True)
+db_helper = PostgresHelper(url="postgresql+asyncpg://postgres:1234@localhost:5432/test_db", echo=True)
 
 session_dep = Depends(db_helper.session_dependency)
 
