@@ -3,6 +3,7 @@ from typing import Annotated
 from ..crud import mongo_crud
 
 from fastapi import APIRouter, HTTPException, Body, Depends
+from fastapi.responses import JSONResponse
 
 from ..core.lifespan import get_mongo
 from ..mongo_db.mongo_helper import MongoHelper
@@ -12,6 +13,8 @@ router = APIRouter(prefix="/mongo")
 mongo_dep: MongoHelper = Depends(get_mongo)
 
 
+
+
 @router.get("/get_all_databases")
 async def get_all_databases(
                             mongo=mongo_dep):
@@ -19,6 +22,8 @@ async def get_all_databases(
     if databases:
         return databases
     raise HTTPException(status_code=403, detail="Databases weren't found")
+
+
 
 
 @router.get("/get_all_collections/{db_name}")
@@ -31,6 +36,8 @@ async def get_all_collections(db_name: str,
     raise HTTPException(status_code=404, detail="Collections weren't found")
 
 
+
+
 @router.get("/get_all_docs/{db_name}/{collection_name}")
 async def get_all_docs(db_name: str, collection_name: str,
                        mongo=mongo_dep):
@@ -40,6 +47,13 @@ async def get_all_docs(db_name: str, collection_name: str,
     if cursor:
         return mongo_crud.id_list_fixed(cursor)
     raise HTTPException(status_code=404, detail="Collections weren't found")
+
+
+
+
+
+
+
 
 
 @router.post("/create_new_database/")
@@ -58,6 +72,8 @@ async def create_new_database(db_name: str, collection_name: str, delete_empty_d
         raise HTTPException(status_code=400, detail=str(e))
 
 
+
+
 @router.post("/create_new_document/{db_name}/{collection_name}")
 async def create_new_document(db_name: str, collection_name: str,
                               document: Annotated[dict, Body(examples=[{"first_key": "first_value", "second_key": "second_value"}])],
@@ -66,6 +82,8 @@ async def create_new_document(db_name: str, collection_name: str,
     collection = db[collection_name]
     await collection.insert_one(document)
     return {"Message": "document created successfully"}
+
+
 
 
 @router.delete("/delete_collection/{db_name}/{collection_name}")
@@ -78,6 +96,8 @@ async def delete_collection(db_name: str, collection_name: str,
         raise (HTTPException(status_code=400, detail=str(e)))
 
 
+
+
 @router.delete("/delete_database/{db_name}")
 async def delete_database(db_name: str,
                           mongo=mongo_dep):
@@ -86,3 +106,57 @@ async def delete_database(db_name: str,
         return {"Message": "database deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
+
+@router.patch("/update_document/{db_name}/{collection_name}")
+async def update_document(db_name: str, collection_name: str, doc_values: dict, new_values: dict,
+                          mongo=mongo_dep):
+    db = mongo.client[db_name]
+    collection = db[collection_name]
+    await collection.update_one(doc_values, {"$set": new_values})
+
+
+
+
+@router.patch("/update_all_docs/{db_name}/{collection_name}")
+async def update_documents(db_name: str, collection_name: str, criteria: dict, new_values: dict,
+                           mongo=mongo_dep):
+    db = mongo.client[db_name]
+    collection = db[collection_name]
+    await collection.update_many(criteria, {"$set": new_values})
+
+
+
+
+@router.patch("/update_all_collection/{db_name}/{collection_name}")
+async def update_collection(db_name: str, collection_name: str, new_values: dict,
+                             mongo=mongo_dep):
+    db = mongo.client[db_name]
+    collection = db[collection_name]
+    await collection.update_many({}, {"$set": new_values})
+
+
+
+
+@router.delete("/delete_one_doc/{db_name}/{collection_name}")
+async def delete_one_doc(db_name: str, collection_name: str, criteria: Annotated[dict, Body()] = {},
+                         mongo=mongo_dep):
+    db = mongo.client[db_name]
+    collection = db[collection_name]
+    await collection.delete_one(criteria)
+    return JSONResponse(status_code=204, content={"Message": "document has been deleted successfully"})
+
+
+
+
+@router.delete("/delete_all_docs/{db_name}/{collection_name}")
+async def delete_all_docs(db_name: str, collection_name: str, criteria: Annotated[dict, Body()] = {},
+                          mongo=mongo_dep):
+    db = mongo.client[db_name]
+    collection = db[collection_name]
+    await collection.delete_name(criteria)
+    return JSONResponse(status_code=204, content={"Message": "documents have been deleted successfully"})
+
+
